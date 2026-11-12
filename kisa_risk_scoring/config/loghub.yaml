@@ -1,0 +1,48 @@
+# =====================================================================
+# LogHub(OpenSSH_2k, Linux_2k) 실제 서버 로그 검증 프로필
+# python -m kisa_scoring.loghub 이 만든 JSONL을 --input-format generic으로 읽는다.
+# =====================================================================
+extends: default.yaml
+
+# 로그 시각에 시간대 표기가 없다. 입력·출력을 같은 시간대로 두어 기록된 시각 그대로 보이게 한다.
+timezone: Asia/Seoul
+input:
+  timezone: Asia/Seoul
+  generic:
+    format: jsonl
+    encoding: utf-8
+    default_event_type: BENIGN
+    filter: null
+    field_map:
+      timestamp: ts
+      src_ip: src_ip
+      dst_ip: dst_ip
+      dst_port: dst_port
+      event_type: event_type
+      signature: signature
+      raw_ref: raw_ref
+
+# ---------------------------------------------------------------------
+# 충격도 I: 템플릿 판정 유형 → 등급 (CICIDS2017 표와 같은 기준)
+#   SSH 무차별 대입 = SSH-Patator와 같은 2, 정찰 = PortScan과 같은 1,
+#   실패 반복 후 로그인 성공 = 계정 탈취 의심(내부 침투 직전 단계)으로 3
+# ---------------------------------------------------------------------
+impact:
+  generic:
+    levels:
+      SSH-LoginAfterFailures: 3
+      SSH-BruteForce: 2
+      SSH-Recon: 1
+      FTP-Probe: 1
+
+# ---------------------------------------------------------------------
+# 자산가치 A [가정]: LogHub는 서버 역할을 공개하지 않는다.
+#   LabSZ = 외부에 SSH를 연 연구실 공용 서버로 보고 3,
+#   combo = 단일 리눅스 호스트로 보고 2.
+# IP는 RFC 5737 문서용 대역으로 붙인 값이다(kisa_scoring/loghub.py HOST_IP).
+# ---------------------------------------------------------------------
+asset_value:
+  default: 1
+  assets:
+    "192.0.2.10": {level: 3, name: "LabSZ (SSH 서버)"}
+    "192.0.2.20": {level: 2, name: "combo (리눅스 호스트)"}

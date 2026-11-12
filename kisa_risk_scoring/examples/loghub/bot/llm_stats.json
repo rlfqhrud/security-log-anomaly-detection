@@ -1,0 +1,65 @@
+{
+  "model": "gpt-5.4-mini",
+  "calls": [
+    {
+      "seconds": 5.648,
+      "prompt_tokens": 480,
+      "completion_tokens": 157
+    },
+    {
+      "seconds": 2.212,
+      "prompt_tokens": 480,
+      "completion_tokens": 149
+    },
+    {
+      "seconds": 2.028,
+      "prompt_tokens": 472,
+      "completion_tokens": 189
+    },
+    {
+      "seconds": 2.569,
+      "prompt_tokens": 472,
+      "completion_tokens": 182
+    },
+    {
+      "seconds": 2.468,
+      "prompt_tokens": 480,
+      "completion_tokens": 154
+    },
+    {
+      "seconds": 2.173,
+      "prompt_tokens": 472,
+      "completion_tokens": 174
+    },
+    {
+      "seconds": 1.737,
+      "prompt_tokens": 472,
+      "completion_tokens": 184
+    },
+    {
+      "seconds": 1.826,
+      "prompt_tokens": 472,
+      "completion_tokens": 168
+    },
+    {
+      "seconds": 1.946,
+      "prompt_tokens": 472,
+      "completion_tokens": 184
+    },
+    {
+      "seconds": 1.906,
+      "prompt_tokens": 480,
+      "completion_tokens": 176
+    },
+    {
+      "seconds": 1.913,
+      "prompt_tokens": 478,
+      "completion_tokens": 188
+    },
+    {
+      "seconds": 2.016,
+      "prompt_tokens": 472,
+      "completion_tokens": 178
+    }
+  ]
+}

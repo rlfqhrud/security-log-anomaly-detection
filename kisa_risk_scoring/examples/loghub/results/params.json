@@ -1,0 +1,23 @@
+{
+  "thresholds": [
+    6.0,
+    23.0
+  ],
+  "fitted_on": {
+    "method": "quantile",
+    "quantiles": [
+      0.5,
+      0.9
+    ],
+    "n_alerts": 84,
+    "count_min": 1,
+    "count_median": 6.0,
+    "count_max": 26,
+    "sources": [
+      "generic"
+    ]
+  },
+  "window": "1min",
+  "mode": "multiclass",
+  "timezone": "Asia/Seoul"
+}

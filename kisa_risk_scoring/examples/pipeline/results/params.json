@@ -1,0 +1,23 @@
+{
+  "thresholds": [
+    44.0,
+    151.6
+  ],
+  "fitted_on": {
+    "method": "quantile",
+    "quantiles": [
+      0.5,
+      0.9
+    ],
+    "n_alerts": 225,
+    "count_min": 1,
+    "count_median": 44.0,
+    "count_max": 431,
+    "sources": [
+      "cicids2017"
+    ]
+  },
+  "window": "1min",
+  "mode": "multiclass",
+  "timezone": "America/Moncton"
+}

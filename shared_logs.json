@@ -1,0 +1,292 @@
+[
+  {
+    "timestamp": "2026-10-07T15:18:27.800663",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.801610",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.804050",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.824765",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.826662",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.832236",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.834542",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.860643",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.872129",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.878751",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.879578",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.880152",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.880665",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.881088",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.937220",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.938102",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.938569",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.938951",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.939313",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.955722",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.967415",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.975228",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:27.980509",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:28.002917",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:28.016436",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/api/items",
+    "query": "",
+    "status": 200
+  },
+  {
+    "timestamp": "2026-10-07T15:18:48.870628",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "auth",
+    "status": "fail"
+  },
+  {
+    "timestamp": "2026-10-07T15:18:48.892968",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "auth",
+    "status": "fail"
+  },
+  {
+    "timestamp": "2026-10-07T15:18:48.909946",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "auth",
+    "status": "fail"
+  },
+  {
+    "timestamp": "2026-10-07T15:18:48.920049",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "auth",
+    "status": "fail"
+  },
+  {
+    "timestamp": "2026-10-07T15:18:48.937977",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "auth",
+    "status": "fail"
+  },
+  {
+    "timestamp": "2026-10-07T15:18:48.952621",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "auth",
+    "status": "fail"
+  },
+  {
+    "timestamp": "2026-10-07T15:18:48.966175",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "auth",
+    "status": "fail"
+  },
+  {
+    "timestamp": "2026-10-07T15:18:48.974465",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "auth",
+    "status": "fail"
+  },
+  {
+    "timestamp": "2026-10-07T15:18:52.231375",
+    "session_id": "SESSION_2D16B467",
+    "src_ip": "127.0.0.1",
+    "event_type": "http_request",
+    "path": "/home",
+    "query": "",
+    "status": 200
+  }
+]

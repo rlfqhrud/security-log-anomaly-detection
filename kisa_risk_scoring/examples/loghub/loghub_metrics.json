@@ -1,0 +1,170 @@
+{
+  "eval_events": 1991,
+  "eval_anomalous_events": 1023,
+  "eval_by_type": {
+    "BENIGN": 968,
+    "FTP-Probe": 537,
+    "SSH-BruteForce": 486
+  },
+  "alerts": 59,
+  "events_per_alert": 17.34,
+  "grades": {
+    "경계": 12,
+    "주의": 12,
+    "관심": 35
+  },
+  "immediate_alerts": 12,
+  "immediate_share": 0.203,
+  "alerts_by_asset_grade": {
+    "LabSZ (SSH 서버) / 경계": 11,
+    "LabSZ (SSH 서버) / 주의": 2,
+    "combo (리눅스 호스트) / 경계": 1,
+    "combo (리눅스 호스트) / 관심": 35,
+    "combo (리눅스 호스트) / 주의": 10
+  },
+  "top_k_by_event_count_types": {
+    "SSH-BruteForce": 11,
+    "FTP-Probe": 1
+  },
+  "top_k_by_risk_types": {
+    "SSH-BruteForce": 12
+  },
+  "top_k_by_event_count_assets": {
+    "combo (리눅스 호스트)": 2,
+    "LabSZ (SSH 서버)": 10
+  },
+  "top_k_by_risk_assets": {
+    "LabSZ (SSH 서버)": 11,
+    "combo (리눅스 호스트)": 1
+  },
+  "llm_model": "gpt-5.4-mini",
+  "llm_calls": 12,
+  "llm_avg_seconds": 2.37,
+  "llm_max_seconds": 5.65,
+  "llm_avg_prompt_tokens": 475,
+  "llm_avg_completion_tokens": 174,
+  "llm_fact_check_pass": 12,
+  "llm_mentions_tia": 12,
+  "llm_fact_check": [
+    {
+      "risk": 18,
+      "dst_ip": "192.0.2.10",
+      "window_start": "2015-12-10 11:00:00",
+      "unknown_ips": [],
+      "wrong_tia": {},
+      "count_matches": true,
+      "mentions_rationale": true,
+      "ok": true
+    },
+    {
+      "risk": 18,
+      "dst_ip": "192.0.2.10",
+      "window_start": "2015-12-10 11:04:00",
+      "unknown_ips": [],
+      "wrong_tia": {},
+      "count_matches": true,
+      "mentions_rationale": true,
+      "ok": true
+    },
+    {
+      "risk": 18,
+      "dst_ip": "192.0.2.10",
+      "window_start": "2015-12-10 10:59:00",
+      "unknown_ips": [],
+      "wrong_tia": {},
+      "count_matches": true,
+      "mentions_rationale": true,
+      "ok": true
+    },
+    {
+      "risk": 18,
+      "dst_ip": "192.0.2.10",
+      "window_start": "2015-12-10 11:01:00",
+      "unknown_ips": [],
+      "wrong_tia": {},
+      "count_matches": true,
+      "mentions_rationale": true,
+      "ok": true
+    },
+    {
+      "risk": 18,
+      "dst_ip": "192.0.2.10",
+      "window_start": "2015-12-10 10:55:00",
+      "unknown_ips": [],
+      "wrong_tia": {},
+      "count_matches": true,
+      "mentions_rationale": true,
+      "ok": true
+    },
+    {
+      "risk": 18,
+      "dst_ip": "192.0.2.10",
+      "window_start": "2015-12-10 10:56:00",
+      "unknown_ips": [],
+      "wrong_tia": {},
+      "count_matches": true,
+      "mentions_rationale": true,
+      "ok": true
+    },
+    {
+      "risk": 18,
+      "dst_ip": "192.0.2.10",
+      "window_start": "2015-12-10 10:58:00",
+      "unknown_ips": [],
+      "wrong_tia": {},
+      "count_matches": true,
+      "mentions_rationale": true,
+      "ok": true
+    },
+    {
+      "risk": 18,
+      "dst_ip": "192.0.2.10",
+      "window_start": "2015-12-10 10:57:00",
+      "unknown_ips": [],
+      "wrong_tia": {},
+      "count_matches": true,
+      "mentions_rationale": true,
+      "ok": true
+    },
+    {
+      "risk": 18,
+      "dst_ip": "192.0.2.10",
+      "window_start": "2015-12-10 11:02:00",
+      "unknown_ips": [],
+      "wrong_tia": {},
+      "count_matches": true,
+      "mentions_rationale": true,
+      "ok": true
+    },
+    {
+      "risk": 18,
+      "dst_ip": "192.0.2.10",
+      "window_start": "2015-12-10 11:03:00",
+      "unknown_ips": [],
+      "wrong_tia": {},
+      "count_matches": true,
+      "mentions_rationale": true,
+      "ok": true
+    },
+    {
+      "risk": 12,
+      "dst_ip": "192.0.2.20",
+      "window_start": "2005-07-10 16:02:00",
+      "unknown_ips": [],
+      "wrong_tia": {},
+      "count_matches": true,
+      "mentions_rationale": true,
+      "ok": true
+    },
+    {
+      "risk": 12,
+      "dst_ip": "192.0.2.10",
+      "window_start": "2015-12-10 10:54:00",
+      "unknown_ips": [],
+      "wrong_tia": {},
+      "count_matches": true,
+      "mentions_rationale": true,
+      "ok": true
+    }
+  ]
+}

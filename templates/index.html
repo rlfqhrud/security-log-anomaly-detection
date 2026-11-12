@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>보안 로그 이상탐지 대시보드</title>
+<style>
+  :root {
+    --gray: #6b7280;
+    --gray-bg: #f3f4f6;
+    --orange: #d97706;
+    --orange-bg: #fef3c7;
+    --red: #dc2626;
+    --red-bg: #fee2e2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", "Malgun Gothic", -apple-system, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 24px 32px 48px;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0;
+  }
+  h2 {
+    font-size: 16px;
+    color: #94a3b8;
+    margin: 28px 0 12px;
+  }
+  #rescan-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #rescan-btn:hover {
+    background: #1d4ed8;
+  }
+  .secondary {
+    background: #334155;
+    color: #e2e8f0;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .secondary:hover {
+    background: #475569;
+  }
+  #target-link {
+    display: inline-flex;
+    align-items: center;
+    color: #93c5fd;
+    font-size: 14px;
+    text-decoration: none;
+    padding: 10px 4px;
+  }
+  #target-link:hover {
+    text-decoration: underline;
+  }
+  #banners {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .banner {
+    background: var(--red-bg);
+    color: #7f1d1d;
+    border: 1px solid var(--red);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .banner.is-new {
+    animation: pop 0.3s ease, glow 1.4s ease-in-out 2;
+  }
+  .banner .new-line {
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #b45309;
+  }
+  .banner.resolved {
+    background: #dcfce7;
+    color: #14532d;
+    border: 1px solid #22c55e;
+  }
+  .response-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .respond-btn {
+    background: #1e293b;
+    color: #e2e8f0;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .respond-btn:hover {
+    background: #334155;
+  }
+  .response-line {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #15803d;
+  }
+  .incident-meta {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #7f1d1d;
+    opacity: 0.85;
+    line-height: 1.6;
+  }
+  .banner.resolved .incident-meta {
+    color: #14532d;
+  }
+  @keyframes pop {
+    from { transform: scale(0.97); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    50% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0.35); }
+  }
+  .attack-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: #334155;
+    color: #cbd5e1;
+    margin: 2px 4px 2px 0;
+  }
+  .attack-badge.new {
+    background: #facc15;
+    color: #713f12;
+    font-weight: 700;
+    animation: glow-badge 1.2s ease-in-out 3;
+  }
+  @keyframes glow-badge {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); }
+    50% { box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.5); }
+  }
+  #no-incident {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #10b981;
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #1e293b;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  th, td {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  th {
+    background: #111827;
+    color: #94a3b8;
+    font-weight: 600;
+  }
+  tr:not(:last-child) td {
+    border-bottom: 1px solid #334155;
+  }
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .badge.low { background: var(--gray-bg); color: var(--gray); }
+  .badge.medium { background: var(--orange-bg); color: var(--orange); }
+  .badge.high { background: var(--red-bg); color: var(--red); }
+  #loading {
+    color: #94a3b8;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .soar-note {
+    margin-top: 28px;
+    font-size: 12px;
+    color: #64748b;
+  }
+  #logs-toggle-btn {
+    margin-left: 10px;
+    background: #334155;
+    color: #cbd5e1;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  #logs-toggle-btn:hover {
+    background: #475569;
+  }
+  #logs-panel {
+    display: none;
+    margin-top: 12px;
+  }
+  #logs-panel table {
+    font-size: 13px;
+  }
+  #logs-panel .muted {
+    color: #64748b;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🛡️ 보안 로그 이상탐지 대시보드</h1>
+  <div style="display:flex; gap:8px;">
+    <a href="http://127.0.0.1:8001" target="_blank" id="target-link">데모 사이트 열기 ↗</a>
+    <button id="reset-btn" class="secondary">실시간 로그 초기화</button>
+    <button id="rescan-btn">다시 스캔</button>
+  </div>
+</header>
+
+<div id="loading">스캔 중...</div>
+<div id="banners"></div>
+
+<h2>탐지 결과 전체 (세션 단위)</h2>
+<table>
+  <thead>
+    <tr>
+      <th>대상 (Session ID)</th>
+      <th>출발지 IP</th>
+      <th>Risk Score</th>
+      <th>위험도</th>
+      <th>공격 유형</th>
+    </tr>
+  </thead>
+  <tbody id="results-body"></tbody>
+</table>
+
+<p class="soar-note">※ 실제 환경에서는 SOAR 플랫폼이 방화벽·IAM API를 호출해 자동/승인 기반으로 처리합니다.</p>
+
+<h2>
+  전체 로그 이력
+  <button id="logs-toggle-btn">보기 / 숨기기</button>
+  <span class="muted" style="font-size:12px; font-weight:400;">정상·저위험 로그도 포함 (알림 대상 아님, 조회 전용)</span>
+</h2>
+<div id="logs-panel">
+  <table>
+    <thead>
+      <tr>
+        <th>시각</th>
+        <th>Session ID</th>
+        <th>이벤트</th>
+        <th>출발지 IP</th>
+        <th>세부정보</th>
+      </tr>
+    </thead>
+    <tbody id="logs-body"></tbody>
+  </table>
+</div>
+
+<script>
+const LEVEL_CLASS = {
+  "저위험": "low",
+  "중위험": "medium",
+  "고위험": "high",
+};
+
+let isFirstScan = true;
+const firstSeenAt = {}; // "entity::attackType" -> timestamp (ms)
+const NEW_HIGHLIGHT_MS = 6000;
+let riskLevels = {}; // /api/risk-levels 응답 (등급 배지 툴팁용, 최초 1회 로드)
+
+async function loadRiskLevels() {
+  try {
+    const res = await fetch("/api/risk-levels");
+    const data = await res.json();
+    riskLevels = data.levels || {};
+  } catch (e) {}
+}
+
+function isRecentlyNew(entity, attackType) {
+  const key = `${entity}::${attackType}`;
+  if (!(key in firstSeenAt)) {
+    firstSeenAt[key] = Date.now();
+    return true;
+  }
+  return Date.now() - firstSeenAt[key] < NEW_HIGHLIGHT_MS;
+}
+
+function attackBadgesHtml(entity, attackTypes) {
+  return attackTypes
+    .map((type) => {
+      const cls = isRecentlyNew(entity, type) ? "attack-badge new" : "attack-badge";
+      return `<span class="${cls}">${type}</span>`;
+    })
+    .join("");
+}
+
+function formatTime(iso) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleTimeString("ko-KR", { hour12: false });
+}
+
+async function respond(entity, action) {
+  await fetch("/api/respond", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ entity, action }),
+  });
+  scan();
+}
+
+async function scan() {
+  const loading = document.getElementById("loading");
+  if (isFirstScan) loading.style.display = "block";
+  try {
+    const res = await fetch("/api/scan");
+    const data = await res.json();
+    renderBanners(data.incidents);
+    renderResults(data.results);
+  } finally {
+    loading.style.display = "none";
+    isFirstScan = false;
+  }
+}
+
+function renderBanners(incidents) {
+  const container = document.getElementById("banners");
+  container.innerHTML = "";
+  if (incidents.length === 0) {
+    const div = document.createElement("div");
+    div.id = "no-incident";
+    div.textContent = "✅ 현재 고위험으로 분류된 이상 활동이 없습니다.";
+    container.appendChild(div);
+    return;
+  }
+  incidents.forEach((incident) => {
+    const hasNew = incident.attack_types.some((t) => isRecentlyNew(incident.entity, t));
+    const resolved = incident.response_status && incident.response_status !== "탐지됨";
+    const div = document.createElement("div");
+    div.className = resolved ? "banner resolved" : (hasNew ? "banner is-new" : "banner");
+
+    const entityJs = JSON.stringify(incident.entity);
+    const actionHtml = resolved
+      ? `<div class="response-line">✅ ${incident.response_status} · ${formatTime(incident.responded_at)}</div>`
+      : `
+        <div class="response-actions">
+          <button class="respond-btn" onclick='respond(${entityJs}, "ip_block")'>🚫 IP 차단(모의)</button>
+          <button class="respond-btn" onclick='respond(${entityJs}, "account_lock")'>🔒 계정 잠금(모의)</button>
+        </div>
+      `;
+
+    const sourceIps = incident.source_ips && incident.source_ips.length ? incident.source_ips.join(", ") : "-";
+    const detailLines = (incident.score_breakdown || []).map(
+      (b) => `<div>· ${b.attack_type} (+${b.score.toFixed(2)}): ${b.detail}</div>`
+    ).join("");
+
+    div.innerHTML = `
+      ⚠️ ${incident.attack_types.join(", ")}로 추정되는 이상 로그 활동이 감지되었습니다 — 대상: ${incident.entity}
+      <div class="new-line">${attackBadgesHtml(incident.entity, incident.attack_types)}</div>
+      <div class="incident-meta">
+        <div>출발지 IP: ${sourceIps}</div>
+        <div>Risk Score: ${Math.round(incident.score * 100)}</div>
+        ${detailLines}
+      </div>
+      ${actionHtml}
+    `;
+    container.appendChild(div);
+  });
+}
+
+function levelTooltip(level) {
+  const meta = riskLevels[level];
+  if (!meta) return "";
+  return (
+    `참고용 매핑(실제 점수 척도와 다름): CVSS ${meta.reference.cvss} / ` +
+    `KISA 경보단계 ${meta.reference.kisa_alert} / 의미: ${meta.meaning}`
+  );
+}
+
+function renderResults(results) {
+  const tbody = document.getElementById("results-body");
+  tbody.innerHTML = "";
+  results.forEach((r) => {
+    const tr = document.createElement("tr");
+    const levelClass = LEVEL_CLASS[r.level] || "low";
+    const sourceIps = r.source_ips && r.source_ips.length ? r.source_ips.join(", ") : "-";
+    tr.innerHTML = `
+      <td>${r.entity}</td>
+      <td>${sourceIps}</td>
+      <td>${Math.round(r.score * 100)}</td>
+      <td><span class="badge ${levelClass}" title="${levelTooltip(r.level)}">${r.level}</span></td>
+      <td>${attackBadgesHtml(r.entity, r.attack_types)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+let logsPanelOpen = false;
+
+function eventDetailText(log) {
+  if (log.event_type === "auth") return `로그인 ${log.status === "success" ? "성공" : "실패"}`;
+  if (log.event_type === "tcp_connect") return `포트 접속: ${log.dst_port}`;
+  if (log.event_type === "http_request") return `${log.path || ""}${log.query ? "?" + log.query : ""}`;
+  return "-";
+}
+
+async function loadLogs() {
+  const res = await fetch("/api/logs");
+  const data = await res.json();
+  const tbody = document.getElementById("logs-body");
+  tbody.innerHTML = "";
+  data.logs.slice(0, 150).forEach((log) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${formatTime(log.timestamp)}</td>
+      <td>${log.session_id || "-"}</td>
+      <td>${log.event_type}</td>
+      <td>${log.src_ip || "-"}</td>
+      <td>${eventDetailText(log)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function toggleLogsPanel() {
+  logsPanelOpen = !logsPanelOpen;
+  document.getElementById("logs-panel").style.display = logsPanelOpen ? "block" : "none";
+  if (logsPanelOpen) loadLogs();
+}
+
+async function resetLiveLogs() {
+  await fetch("/api/reset-live-logs", { method: "POST" });
+  for (const key in firstSeenAt) delete firstSeenAt[key];
+  scan();
+}
+
+document.getElementById("rescan-btn").addEventListener("click", scan);
+document.getElementById("reset-btn").addEventListener("click", resetLiveLogs);
+document.getElementById("logs-toggle-btn").addEventListener("click", toggleLogsPanel);
+window.addEventListener("DOMContentLoaded", async () => {
+  await loadRiskLevels();
+  scan();
+});
+setInterval(() => {
+  scan();
+  if (logsPanelOpen) loadLogs();
+}, 2000);
+</script>
+</body>
+</html>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecureShop 데모 사이트</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", "Malgun Gothic", -apple-system, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+  }
+  header {
+    background: #1e293b;
+    color: white;
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header h1 {
+    font-size: 18px;
+    margin: 0;
+  }
+  nav {
+    display: flex;
+    gap: 8px;
+  }
+  nav button {
+    background: transparent;
+    border: 1px solid #475569;
+    color: #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  nav button:hover {
+    background: #334155;
+  }
+  main {
+    max-width: 720px;
+    margin: 32px auto;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px 24px;
+  }
+  .card h2 {
+    font-size: 15px;
+    margin: 0 0 14px;
+    color: #334155;
+  }
+  .row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  input[type="text"], input[type="password"] {
+    flex: 1;
+    min-width: 160px;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  button.primary {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  button.primary:hover { background: #1d4ed8; }
+  button.ghost {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  button.ghost:hover { background: #e2e8f0; }
+  button.danger {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .hint {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 6px;
+  }
+  .status-msg {
+    font-size: 13px;
+    margin-top: 8px;
+    min-height: 18px;
+  }
+  .status-msg.ok { color: #16a34a; }
+  .status-msg.err { color: #dc2626; }
+  .footer-note {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #1e40af;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .log-count {
+    font-size: 12px;
+    color: #64748b;
+  }
+  .session-badge {
+    font-size: 12px;
+    color: #93c5fd;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 999px;
+    padding: 4px 12px;
+  }
+  #block-banner {
+    display: none;
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🛒 SecureShop 데모 사이트</h1>
+  <nav style="align-items:center;">
+    <span class="session-badge" id="session-badge">내 세션: -</span>
+    <button onclick="visitPage('/home')">홈</button>
+    <button onclick="visitPage('/products')">상품 목록</button>
+    <button onclick="visitPage('/mypage')">마이페이지</button>
+  </nav>
+</header>
+
+<main>
+  <div id="block-banner"></div>
+
+  <div class="card">
+    <h2>로그인</h2>
+    <div class="row">
+      <input type="text" id="username" placeholder="아이디 (admin)">
+      <input type="password" id="password" placeholder="비밀번호 (admin1234)">
+      <button class="primary" onclick="login()">로그인</button>
+    </div>
+    <div class="row">
+      <button class="ghost" onclick="bruteForce()">🔁 브루트포스 시뮬레이션 (잘못된 비밀번호 8연속 시도)</button>
+    </div>
+    <div class="hint">정상 로그인: admin / admin1234</div>
+    <div class="status-msg" id="login-status"></div>
+  </div>
+
+  <div class="card">
+    <h2>검색</h2>
+    <div class="row">
+      <input type="text" id="query" placeholder="검색어 입력">
+      <button class="primary" onclick="search()">검색</button>
+    </div>
+    <div class="row">
+      <button class="ghost" onclick="quickSearch('노트북')">예시: 노트북</button>
+      <button class="ghost" onclick="quickSearch(&quot;admin' OR '1'='1&quot;)">⚠️ SQL 인젝션 예시</button>
+      <button class="ghost" onclick="quickSearch('&lt;script&gt;alert(1)&lt;/script&gt;')">⚠️ XSS 예시</button>
+    </div>
+    <div class="status-msg" id="search-status"></div>
+  </div>
+
+  <div class="card">
+    <h2>대량 요청 테스트 (DoS 패턴)</h2>
+    <div class="row">
+      <button class="ghost" onclick="burstRequests()">⚡ 짧은 시간에 요청 25회 보내기 (Flood)</button>
+      <button class="ghost" onclick="slowRequests()">🐌 느리지만 꾸준히 요청 보내기 (Slow/Slowloris 느낌)</button>
+    </div>
+    <div class="status-msg" id="burst-status"></div>
+    <div class="status-msg" id="slow-status"></div>
+  </div>
+
+  <div class="card">
+    <h2>포트 접속 테스트 (포트 스캔 패턴)</h2>
+    <div class="row">
+      <button class="ghost" onclick="portScan()">🔍 여러 포트에 순차 접속 시도</button>
+    </div>
+    <div class="status-msg" id="scan-status"></div>
+  </div>
+
+  <div class="footer-note">
+    <span>이 사이트의 활동은 실시간으로 보안 대시보드에 기록됩니다. 대시보드에서 "다시 스캔"을 눌러 확인하세요.</span>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <span class="log-count" id="log-count">기록된 로그: -</span>
+      <button class="danger" onclick="resetLogs()">로그 초기화</button>
+    </div>
+  </div>
+</main>
+
+<script>
+async function refreshCount() {
+  try {
+    const res = await fetch("/api/log-count");
+    const data = await res.json();
+    document.getElementById("log-count").textContent = `기록된 로그: ${data.count}건`;
+  } catch (e) {}
+}
+
+async function refreshBlockStatus() {
+  const banner = document.getElementById("block-banner");
+  try {
+    const res = await fetch("/api/my-status");
+    const data = await res.json();
+    document.getElementById("session-badge").textContent = `내 세션: ${data.session_id}`;
+    if (data.blocked) {
+      banner.style.display = "block";
+      banner.textContent = data.state.action === "ip_block"
+        ? `🚫 이 세션(${data.session_id} · ${data.ip})은 보안 대시보드에서 차단되었습니다. 모든 요청이 거부됩니다.`
+        : `🔒 이 세션(${data.session_id})은 계정이 잠겼습니다. 로그인이 거부됩니다.`;
+    } else {
+      banner.style.display = "none";
+    }
+  } catch (e) {}
+}
+
+// 폼 데이터를 POST하고, 서버가 거부(403/423 등)하면 detail 메시지로 예외를 던진다.
+async function postForm(url, bodyStr) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: bodyStr,
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.detail || `요청이 거부되었습니다 (HTTP ${res.status})`);
+  }
+  return res.json();
+}
+
+async function visitPage(path) {
+  try {
+    await postForm("/visit", `path=${encodeURIComponent(path)}`);
+  } catch (e) {
+    alert(e.message);
+  }
+  refreshCount();
+  refreshBlockStatus();
+}
+
+async function login() {
+  const username = document.getElementById("username").value || "";
+  const password = document.getElementById("password").value || "";
+  const el = document.getElementById("login-status");
+  try {
+    const data = await postForm(
+      "/login",
+      `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+    );
+    el.textContent = data.success ? "✅ 로그인 성공" : "❌ 로그인 실패";
+    el.className = "status-msg " + (data.success ? "ok" : "err");
+  } catch (e) {
+    el.textContent = e.message;
+    el.className = "status-msg err";
+  }
+  refreshCount();
+  refreshBlockStatus();
+}
+
+async function bruteForce() {
+  const el = document.getElementById("login-status");
+  el.textContent = "🔁 잘못된 비밀번호로 8회 연속 로그인 시도 중...";
+  el.className = "status-msg err";
+  for (let i = 0; i < 8; i++) {
+    try {
+      await postForm("/login", `username=admin&password=wrong${i}`);
+    } catch (e) {
+      el.textContent = `${e.message} (${i}회 시도 후 중단됨)`;
+      refreshCount();
+      refreshBlockStatus();
+      return;
+    }
+  }
+  el.textContent = "❌ 로그인 실패 8회 기록 완료 (브루트포스 패턴)";
+  refreshCount();
+  refreshBlockStatus();
+}
+
+async function search(q) {
+  const value = q !== undefined ? q : (document.getElementById("query").value || "");
+  const el = document.getElementById("search-status");
+  try {
+    await postForm("/search", `q=${encodeURIComponent(value)}`);
+    el.textContent = `"${value}" 검색 기록됨`;
+    el.className = "status-msg ok";
+  } catch (e) {
+    el.textContent = e.message;
+    el.className = "status-msg err";
+  }
+  refreshCount();
+  refreshBlockStatus();
+}
+
+function quickSearch(value) {
+  document.getElementById("query").value = value;
+  search(value);
+}
+
+async function burstRequests() {
+  const el = document.getElementById("burst-status");
+  el.textContent = "⚡ 요청 25회 전송 중...";
+  const requests = [];
+  for (let i = 0; i < 25; i++) {
+    requests.push(postForm("/visit", "path=/api/items"));
+  }
+  const outcomes = await Promise.allSettled(requests);
+  const rejected = outcomes.filter((o) => o.status === "rejected");
+  if (rejected.length === outcomes.length) {
+    el.textContent = `🚫 ${rejected[0].reason.message}`;
+  } else {
+    el.textContent = `✅ 요청 25회 전송 완료 (DoS 패턴, 거부됨 ${rejected.length}건)`;
+  }
+  refreshCount();
+  refreshBlockStatus();
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function slowRequests() {
+  const el = document.getElementById("slow-status");
+  const total = 15;
+  for (let i = 0; i < total; i++) {
+    el.textContent = `🐌 느린 요청 전송 중... (${i + 1}/${total})`;
+    try {
+      await postForm("/visit", "path=/slow-poll");
+    } catch (e) {
+      el.textContent = `${e.message} (${i}건 전송 후 중단됨)`;
+      refreshCount();
+      refreshBlockStatus();
+      return;
+    }
+    await sleep(1000); // 1초 간격 -> Flood 임계값(10초 안에 20건)은 못 채우고, Slow 임계값(120초 안에 15건)만 채움
+  }
+  el.textContent = `✅ ${total}건을 ${total}초에 걸쳐 전송 완료 (Slow DoS 패턴 — Flood와는 다름)`;
+  refreshCount();
+  refreshBlockStatus();
+}
+
+async function portScan() {
+  const el = document.getElementById("scan-status");
+  el.textContent = "🔍 여러 포트에 순차 접속 중...";
+  const ports = [21, 22, 23, 25, 80, 443, 3306, 3389, 8080, 8443];
+  for (const port of ports) {
+    try {
+      await postForm("/connect", `dst_port=${port}`);
+    } catch (e) {
+      el.textContent = `${e.message} (포트 ${port} 시도 중 중단됨)`;
+      refreshCount();
+      refreshBlockStatus();
+      return;
+    }
+  }
+  el.textContent = `✅ 포트 ${ports.length}개 순차 접속 완료 (포트 스캔 패턴)`;
+  refreshCount();
+  refreshBlockStatus();
+}
+
+async function resetLogs() {
+  await fetch("/api/reset-logs", { method: "POST" });
+  refreshCount();
+  refreshBlockStatus();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  refreshCount();
+  refreshBlockStatus();
+});
+setInterval(refreshBlockStatus, 2000);
+</script>
+</body>
+</html>

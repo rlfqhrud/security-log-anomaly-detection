@@ -1,0 +1,38 @@
+# =====================================================================
+# CICIDS2017 실험망 프로필
+# default.yaml을 상속하고, 실험망에만 해당하는 값(시간대, 자산표)을 덮어쓴다.
+# --input-format cicids2017(기본)이고 --config를 주지 않으면 이 파일을 쓴다.
+# CICIDS2017 PCAP을 Suricata로 돌린 EVE를 평가할 때도 이 프로필을 쓴다(같은 자산).
+# =====================================================================
+extends: default.yaml
+
+# UNB(캐나다 뉴브런즈윅주 프레더릭턴)는 대서양 시간대다(2017년 7월 = ADT, UTC-3).
+# CSV의 Timestamp와 UNB 공개 공격 일정이 모두 현지 시각이므로 출력도 현지 시각으로 둔다.
+timezone: America/Moncton
+input:
+  timezone: America/Moncton
+
+# ---------------------------------------------------------------------
+# 자산가치 A: UNB CIC가 공개한 CICIDS2017 피해자(victim) 네트워크 구성
+# 공인 IP는 방화벽 NAT 뒤의 같은 서버이므로 같은 등급을 준다.
+# ---------------------------------------------------------------------
+asset_value:
+  default: 1
+  assets:
+    # 3: 서비스·인증 기반 서버 (침해 시 조직 전체에 영향)
+    "192.168.10.3":   {level: 3, name: "DC / DNS Server (Windows Server 2016)"}
+    "192.168.10.50":  {level: 3, name: "Web Server (Ubuntu 16)"}
+    "205.174.165.68": {level: 3, name: "Web Server (Ubuntu 16, public)"}
+    "192.168.10.51":  {level: 3, name: "Ubuntu Server 12"}
+    "205.174.165.66": {level: 3, name: "Ubuntu Server 12 (public)"}
+    # 2: 사용자 PC (개별 사용자 단위 피해)
+    "192.168.10.19":  {level: 2, name: "PC (Ubuntu 14.4, 32B)"}
+    "192.168.10.17":  {level: 2, name: "PC (Ubuntu 14.4, 64B)"}
+    "192.168.10.16":  {level: 2, name: "PC (Ubuntu 16.4, 32B)"}
+    "192.168.10.12":  {level: 2, name: "PC (Ubuntu 16.4, 64B)"}
+    "192.168.10.9":   {level: 2, name: "PC (Windows 7 Pro, 64B)"}
+    "192.168.10.5":   {level: 2, name: "PC (Windows 8.1, 64B)"}
+    "192.168.10.8":   {level: 2, name: "PC (Windows Vista, 64B)"}
+    "192.168.10.14":  {level: 2, name: "PC (Windows 10 Pro, 32B)"}
+    "192.168.10.15":  {level: 2, name: "PC (Windows 10, 64B)"}
+    "192.168.10.25":  {level: 2, name: "PC (macOS)"}

@@ -1,0 +1,67 @@
+{
+  "files": {
+    "OpenSSH_2k.log": {
+      "events": 2008,
+      "anomalous": 626,
+      "by_type": {
+        "BENIGN": 1382,
+        "SSH-BruteForce": 531,
+        "SSH-Recon": 95
+      },
+      "attacker_ips_by_host": {
+        "LabSZ": 26
+      },
+      "first": "2015-12-10T06:55:46",
+      "last": "2015-12-10T11:04:45",
+      "calib_events": 1011,
+      "eval_events": 997
+    },
+    "Linux_2k.log": {
+      "events": 1992,
+      "anomalous": 1219,
+      "by_type": {
+        "FTP-Probe": 909,
+        "BENIGN": 773,
+        "SSH-BruteForce": 310
+      },
+      "attacker_ips_by_host": {
+        "combo": 66
+      },
+      "first": "2005-06-14T15:16:01",
+      "last": "2005-07-27T14:42:00",
+      "calib_events": 998,
+      "eval_events": 994
+    }
+  },
+  "calib": {
+    "events": 2009,
+    "anomalous": 822,
+    "by_type": {
+      "BENIGN": 1187,
+      "FTP-Probe": 372,
+      "SSH-BruteForce": 355,
+      "SSH-Recon": 95
+    },
+    "attacker_ips_by_host": {
+      "combo": 34,
+      "LabSZ": 24
+    },
+    "first": "2005-06-14T15:16:01",
+    "last": "2015-12-10T10:14:13"
+  },
+  "eval": {
+    "events": 1991,
+    "anomalous": 1023,
+    "by_type": {
+      "BENIGN": 968,
+      "FTP-Probe": 537,
+      "SSH-BruteForce": 486
+    },
+    "attacker_ips_by_host": {
+      "combo": 36,
+      "LabSZ": 6
+    },
+    "first": "2005-07-09T12:59:44",
+    "last": "2015-12-10T11:04:45"
+  }
+}

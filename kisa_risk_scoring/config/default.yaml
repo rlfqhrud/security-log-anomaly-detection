@@ -1,0 +1,177 @@
+# =====================================================================
+# KISA 기반 SOC 경보 위험도 산정 설정 (공통 기본값)
+#
+# 공식 구조 : KISA 특허 KR100955281B1 「위협 관리를 위한 보안 위험도 평가 방법」
+#             위험도 = 공격도(T) × 충격도(I) × 자산가치(A)
+# 척도·구간·등급 : KISA ISMS-P 인증기준 안내서(2022) 1.2.3 「위험 평가」에 따라
+#             조직이 자체 수립한 값이다. 아래 숫자는 모두 이 프로젝트의 자체 기준이며
+#             KISA가 제시한 수치가 아니다.
+#
+# 이 파일은 입력 형식과 무관한 공통 설정이다. 실험망·조직별 값은 별도 파일에서
+# `extends: default.yaml`로 상속해 덮어쓴다 (예: config/cicids2017.yaml).
+# 상속 규칙: 딕셔너리는 키 단위로 합치고, 그 밖의 값(목록 포함)은 통째로 바꾼다.
+# =====================================================================
+
+# binary     : 정상/이상만 판정 → 유형 정보가 없으므로 R = T×A (1~9)
+# multiclass : 유형까지 판정     → R = T×I×A (1~27)
+mode: multiclass
+
+# 경보 집계 창. 경보 = (창, 목적지 IP) 쌍 하나.
+# 입력 timestamp 해상도보다 작게 잡으면 의미가 없다(어댑터별 해상도보다 작으면 경고).
+#   cicids2017: 1분(일부 파일이 분 단위로만 기록) / suricata: µs / generic: 1초로 가정
+window: 1min
+
+# 경보 창 계산과 출력 시각(alerts.json의 "%Y-%m-%d %H:%M:%S")의 기준 시간대.
+# 창 경계는 UTC 기준으로 자른 뒤 이 시간대로 변환한다(서머타임 전환에도 안전).
+timezone: Asia/Seoul
+
+# ---------------------------------------------------------------------
+# 입력 형식별 설정
+# ---------------------------------------------------------------------
+input:
+  # 원본 시각에 timezone 표기가 없을 때 해석할 시간대
+  timezone: Asia/Seoul
+
+  cicids2017:
+    fix_12h: true        # AM/PM 없는 12시간제 오후 시각 보정 (README 데이터 이슈 참고)
+
+  suricata:
+    # EVE의 alert 줄만 경보 입력. flow 줄은 CLI --suricata-flows로 맥락 집계만 한다.
+    event_types: [alert]
+
+  generic:
+    format: auto         # auto(확장자) | csv | json | jsonl
+    encoding: utf-8-sig
+    default_event_type: Unknown   # event_type이 비어 있는 행
+    # 특정 행만 쓰려면: filter: {field: event.kind, values: [alert, signal]}
+    filter: null
+    # 공통 필드 → 원본 필드. 중첩 JSON은 점 표기, 목록이면 앞에서부터 처음 값이 있는 필드.
+    # 아래는 Elastic Common Schema(ECS) 형식 예시 매핑이다. 다른 SIEM은 이 블록만 바꾼다.
+    field_map:
+      timestamp: "@timestamp"
+      src_ip: source.ip
+      dst_ip: destination.ip
+      dst_port: destination.port
+      proto: network.transport
+      event_type: [rule.category, threat.tactic.name, event.category]
+      severity_hint: [kibana.alert.severity, event.severity, log.level]
+      raw_ref: [event.id, _id]
+      signature: rule.name
+
+# ---------------------------------------------------------------------
+# 공격도 T (1~3): 창 안에서 같은 목적지로 향한 이벤트 건수 n 기준
+#   n <= b1 → 1,  n <= b2 → 2,  그 외 → 3
+# 입력 형식이 다르면 건수 분포가 다르므로 같은 형식의 보정 데이터로 정해야 한다.
+# ---------------------------------------------------------------------
+attack_degree:
+  # quantile : 보정(calibration) 데이터 경보들의 건수 분포에서 경계를 학습
+  # fixed    : thresholds 값을 그대로 사용
+  method: quantile
+  # 중앙값 이하 = 평소 수준(1), 상위 10% 초과 = 대량(3)
+  quantiles: [0.50, 0.90]
+  # fixed일 때만 사용: [b1, b2]
+  thresholds: null
+
+# ---------------------------------------------------------------------
+# 충격도 I (1~3): 탐지 유형이 성공했을 때 피해의 크기 (multiclass 모드에서만 사용)
+# 어느 표에도 없는 유형은 default를 쓰고 경고 로그를 남긴다.
+# ---------------------------------------------------------------------
+impact:
+  default: 2
+  # 창 안 비중이 이 값 이상인 유형만 충격도 후보가 된다.
+  # 순수 max를 쓰면 오분류 이벤트 1건이 경보 전체 충격도를 3으로 올리기 때문이다.
+  min_share: 0.05
+
+  # --- cicids2017: 공격 유형 레이블 → 등급 -----------------------------
+  levels:
+    # 상(3): 정보 유출, 내부 침투, 원격 제어
+    Heartbleed: 3                       # 서버 메모리 유출(개인키·세션 정보)
+    Infiltration: 3                     # 내부망 침투 후 거점 확보
+    Bot: 3                              # 감염 호스트 원격 제어(C&C)
+    "Web Attack - Sql Injection": 3     # DB 정보 유출
+    # 중(2): 가용성 침해, 계정 탈취 시도
+    DoS Hulk: 2
+    DoS GoldenEye: 2
+    DoS slowloris: 2
+    DoS Slowhttptest: 2
+    DDoS: 2
+    FTP-Patator: 2                      # FTP 계정 무차별 대입
+    SSH-Patator: 2                      # SSH 계정 무차별 대입
+    "Web Attack - Brute Force": 2       # 웹 로그인 무차별 대입
+    "Web Attack - XSS": 2               # 사용자 세션 탈취 시도
+    # 하(1): 정찰 단계 (직접 피해 없음)
+    PortScan: 1
+
+  # --- suricata: 1) category 표 → 2) severity 표 → 3) default ----------
+  suricata:
+    # alert.severity(1=높음, 3=낮음) → I. [팀 확정 필요]
+    severity: {1: 3, 2: 2, 3: 1}
+    # alert.category(classtype 설명)별 덮어쓰기. severity보다 우선한다. [팀 확정 필요]
+    # 룰 작성자가 매긴 severity와 무관하게 피해 크기가 분명한 분류만 둔다.
+    category:
+      # 3: 원격 제어·권한 탈취·대량 유출
+      A Network Trojan was detected: 3
+      Malware Command and Control Activity Detected: 3
+      Successful Administrator Privilege Gain: 3
+      Successful User Privilege Gain: 3
+      Large Scale Information Leak: 3
+      # 2: 가용성 침해
+      Attempted Denial of Service: 2
+      Denial of Service: 2
+      Detection of a Denial of Service Attack: 2
+      # 1: 정찰·정책 위반 수준
+      Detection of a Network Scan: 1
+      Attempted Information Leak: 1
+      Misc activity: 1
+      Not Suspicious Traffic: 1
+      Generic Protocol Command Decode: 1
+
+  # --- generic: 1) levels 표 → 2) severity 표 → 3) severity_numeric → 4) default
+  generic:
+    # event_type 값 → I (SIEM 룰 분류 체계에 맞춰 채운다)
+    levels: {}
+    # severity_hint 문자열(대소문자 무시) → I. [팀 확정 필요]
+    severity: {critical: 3, high: 3, medium: 2, low: 1}
+    # 숫자 심각도(예: ECS event.severity, 0~100 위험 점수) 구간 → I. 위에서부터 min 이상이면 해당 등급.
+    # [팀 확정 필요] 예시는 Elastic 위험 점수 구간(73↑ critical/high, 47↑ high, 21↑ medium)을 단순화한 값.
+    severity_numeric:
+      - {min: 73, level: 3}
+      - {min: 21, level: 2}
+      - {min: 0, level: 1}
+
+# ---------------------------------------------------------------------
+# 자산가치 A (1~3): 목적지 IP 기준
+# 키는 단일 IP 또는 CIDR 대역(IPv4·IPv6). 여러 항목에 걸리면 가장 좁은 대역(긴 prefix)이 우선한다.
+# 조직 자산 대장으로 채운다. 실험망 자산표는 config/cicids2017.yaml 참고.
+# ---------------------------------------------------------------------
+asset_value:
+  # 목록에 없는 IP(외부 호스트, 미등록 장비)
+  default: 1
+  assets: {}
+  # 예시:
+  #   "10.0.1.0/24":   {level: 3, name: "서버 팜"}
+  #   "10.0.1.10":     {level: 2, name: "개발 서버"}       # /24 안이지만 더 좁으므로 이 값이 우선
+  #   "10.20.0.0/16":  {level: 2, name: "사용자 PC 대역"}
+  #   "2001:db8:10::/64": {level: 3, name: "DMZ (IPv6)"}
+
+# ---------------------------------------------------------------------
+# 등급표: min_score 내림차순으로 적고, 위에서부터 처음 만족하는 등급을 준다.
+# 마지막 등급의 min_score는 1 이하여야 모든 경보가 등급을 받는다.
+#
+# 등급 명칭(관심·주의·경계·심각)은 국가 사이버위기 경보 단계에서 이름만 빌렸으며,
+# 국가 경보 발령 기준과는 무관하다.
+# immediate: true 인 등급은 '즉시 알림' 대상으로 평가에 집계된다.
+# ---------------------------------------------------------------------
+grades:
+  # 1~27: 27 = 세 요소 모두 최고, 12 이상 = 두 요소가 높고 하나가 중간 이상
+  multiclass:
+    - {name: 심각, min_score: 27, action: "즉시 알림 + LLM 상세 요약", immediate: true}
+    - {name: 경계, min_score: 12, action: "즉시 알림 + LLM 요약",      immediate: true}
+    - {name: 주의, min_score: 6,  action: "정기 요약 보고에 포함",     immediate: false}
+    - {name: 관심, min_score: 1,  action: "기록",                      immediate: false}
+  # 1~9: 9 = 대량 공격 × 핵심 자산
+  binary:
+    - {name: 심각, min_score: 9, action: "즉시 알림 + LLM 상세 요약", immediate: true}
+    - {name: 경계, min_score: 6, action: "즉시 알림 + LLM 요약",      immediate: true}
+    - {name: 주의, min_score: 3, action: "정기 요약 보고에 포함",     immediate: false}
+    - {name: 관심, min_score: 1, action: "기록",                      immediate: false}

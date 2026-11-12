@@ -1,0 +1,20 @@
+# CICIDS2017 플로우 통계 기반 DoS 룰(R-DOS-FLOOD / R-DOS-SLOW) 임계값.
+#
+# DRAFT: 5주차 3단계 임계값 스윕(분위수 스윕으로 precision/recall/F1 비교)이
+# 아직 실행되지 않았습니다. 여기 숫자는 "이런 식으로 나눈다"는 구조를
+# 보여주기 위한 잠정값이고, 실제 CICIDS2017 CSV로 스윕한 뒤 바꿔야 합니다.
+#
+# 단위 주의: CICIDS2017(CICFlowMeter 산출)의 Flow Duration은 보통 마이크로초
+# 단위입니다. min_flow_duration_us: 1000000 = 1초.
+
+dos_flood:
+  # "짧고 굵게" - Hulk/GoldenEye류. 포트 80에서 패킷 전송 속도가 매우 높음.
+  port: 80
+  min_flow_packets_per_sec: 1000  # DRAFT
+
+dos_slow:
+  # "길고 가늘게" - slowloris/Slowhttptest류. 연결을 오래 쥐고 있으면서
+  # 패킷은 거의 안 보냄.
+  port: 80
+  min_flow_duration_us: 5000000   # DRAFT (5초 이상)
+  max_flow_packets_per_sec: 10    # DRAFT

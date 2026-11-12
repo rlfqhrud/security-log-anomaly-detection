@@ -1,0 +1,19 @@
+{
+  "thresholds": [
+    1.0,
+    66.80000000000001
+  ],
+  "fitted_on": {
+    "method": "quantile",
+    "quantiles": [
+      0.5,
+      0.9
+    ],
+    "n_alerts": 413,
+    "count_min": 1,
+    "count_median": 1.0,
+    "count_max": 424
+  },
+  "window": "1min",
+  "mode": "multiclass"
+}
