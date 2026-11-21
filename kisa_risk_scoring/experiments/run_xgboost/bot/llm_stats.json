@@ -1,0 +1,110 @@
+{
+  "model": "gpt-5.4-mini",
+  "calls": [
+    {
+      "seconds": 2.544,
+      "prompt_tokens": 466,
+      "completion_tokens": 200
+    },
+    {
+      "seconds": 2.132,
+      "prompt_tokens": 466,
+      "completion_tokens": 193
+    },
+    {
+      "seconds": 1.854,
+      "prompt_tokens": 466,
+      "completion_tokens": 199
+    },
+    {
+      "seconds": 1.664,
+      "prompt_tokens": 466,
+      "completion_tokens": 174
+    },
+    {
+      "seconds": 1.591,
+      "prompt_tokens": 466,
+      "completion_tokens": 204
+    },
+    {
+      "seconds": 1.653,
+      "prompt_tokens": 466,
+      "completion_tokens": 190
+    },
+    {
+      "seconds": 1.768,
+      "prompt_tokens": 466,
+      "completion_tokens": 222
+    },
+    {
+      "seconds": 1.779,
+      "prompt_tokens": 466,
+      "completion_tokens": 245
+    },
+    {
+      "seconds": 1.499,
+      "prompt_tokens": 466,
+      "completion_tokens": 196
+    },
+    {
+      "seconds": 1.8,
+      "prompt_tokens": 466,
+      "completion_tokens": 222
+    },
+    {
+      "seconds": 1.701,
+      "prompt_tokens": 466,
+      "completion_tokens": 154
+    },
+    {
+      "seconds": 1.648,
+      "prompt_tokens": 466,
+      "completion_tokens": 193
+    },
+    {
+      "seconds": 1.553,
+      "prompt_tokens": 466,
+      "completion_tokens": 204
+    },
+    {
+      "seconds": 1.473,
+      "prompt_tokens": 466,
+      "completion_tokens": 198
+    },
+    {
+      "seconds": 1.546,
+      "prompt_tokens": 466,
+      "completion_tokens": 196
+    },
+    {
+      "seconds": 2.08,
+      "prompt_tokens": 466,
+      "completion_tokens": 230
+    },
+    {
+      "seconds": 1.662,
+      "prompt_tokens": 466,
+      "completion_tokens": 187
+    },
+    {
+      "seconds": 1.39,
+      "prompt_tokens": 466,
+      "completion_tokens": 178
+    },
+    {
+      "seconds": 1.994,
+      "prompt_tokens": 466,
+      "completion_tokens": 211
+    },
+    {
+      "seconds": 1.542,
+      "prompt_tokens": 466,
+      "completion_tokens": 178
+    },
+    {
+      "seconds": 1.465,
+      "prompt_tokens": 466,
+      "completion_tokens": 195
+    }
+  ]
+}

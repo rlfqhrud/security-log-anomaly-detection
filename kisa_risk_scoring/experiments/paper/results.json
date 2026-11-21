@@ -1,0 +1,80 @@
+{
+ "best_ko": "XGBoost",
+ "llm_model": "gpt-5.4-mini",
+ "abstract": "Security operations centers (SOCs) must handle large volumes of alerts, and alert fatigue delays the response to real threats. This paper proposes a SOC assistant alert bot that groups flow-level anomaly detection results into alerts by one-minute window and destination asset, scores each alert with the KISA risk model defined as the product of attack degree, impact, and asset value, and summarizes high-risk alerts with a large language model (LLM) that receives the scoring rationale as input. The bot differentiates its response into immediate notification, periodic reporting, and logging by risk grade. On the CICIDS2017 dataset, XGBoost achieved the highest macro-F1 (0.918) among five classifiers. In the evaluation on Thursday and Friday traffic, 292,007 anomalous flows were grouped into 682 alerts, all 21 immediate notifications (3.1%) were true alerts, and the proposed ranking achieved the highest AUC (0.826) among five factor combinations.",
+ "exp_setup": "실험에는 CICIDS2017[7]의 GeneratedLabelledFlows 중 화~금요일 2,300,825개 flow를 사용하였다. 빈 행과 깨진 레이블 문자, 12시간제로 기록된 오후 시각을 정리하였다. 탐지 모델은 IP·포트·시각을 제외한 79개 특징으로 학습하고 5-fold 층화 교차 예측으로 모든 flow에 판정을 붙였다. 모델 선정은 공격 flow 전부와 정상 flow 20%를 표본으로 한 같은 조건에서 5종을 비교하였으며, 충격도가 유형 판정에 의존하므로 드문 유형까지 고르게 반영하는 macro-F1을 기준으로 하였다. Table 2는 이 조건에서 측정한 5종 모델의 탐지 성능이다.",
+ "table_models": [
+  [
+   "Model",
+   "Macro-F1",
+   "Binary F1",
+   "FPR(%)"
+  ],
+  [
+   "XGBoost",
+   "0.918",
+   "0.9994",
+   "0.13"
+  ],
+  [
+   "Extra Trees",
+   "0.886",
+   "0.9987",
+   "0.21"
+  ],
+  [
+   "Random Forest",
+   "0.886",
+   "0.9991",
+   "0.15"
+  ],
+  [
+   "Decision Tree",
+   "0.884",
+   "0.9990",
+   "0.16"
+  ],
+  [
+   "LightGBM*",
+   "0.193",
+   "0.7759",
+   "71.45"
+  ]
+ ],
+ "model_result": "XGBoost가 macro-F1 0.918로 가장 우수하였고, 특히 표본이 21건인 SQL Injection의 F1이 0.821로 다른 모델(0.439~0.625)보다 높았다. 전체 flow에 대한 XGBoost의 성능은 macro-F1 0.899, 오탐률 0.085%였다. *LightGBM은 두 설정 모두 학습이 수렴하지 않았다.",
+ "exp_result": "공격도 경계는 화·수요일 경보로 보정하여 $b_1$=94, $b_2$=339.4를 얻었고 목·금요일 데이터로 평가하였다. 경보에 묶인 flow 중 실제 공격 비율이 0.5 이상인 경보를 참 경보로 정의하였다. 이상 flow 292,007건은 경보 682건으로 묶였고(경보당 428 flow), 즉시 알림(경계)은 21건(3.1%)으로 모두 참 경보였다. 주의·관심 등급의 정밀도는 0.892, 0.436이며, 오경보 242건 중 211건(87%)이 가장 낮은 관심 등급에 배치되었다. Table 3은 경보 정렬 기준별 참·오경보 구분 AUC와 상위 21건의 precision@k이다.",
+ "table_ablation": [
+  [
+   "Ranking",
+   "AUC",
+   "Precision@k"
+  ],
+  [
+   "$T$",
+   "0.534",
+   "1.000"
+  ],
+  [
+   "$A$",
+   "0.752",
+   "1.000"
+  ],
+  [
+   "$T TIMES A$",
+   "0.753",
+   "1.000"
+  ],
+  [
+   "$T TIMES I$",
+   "0.639",
+   "1.000"
+  ],
+  [
+   "$T TIMES I TIMES A$ (proposed)",
+   "0.826",
+   "1.000"
+  ]
+ ],
+ "exp_result2": "제안한 $T TIMES I TIMES A$의 AUC가 0.826로 가장 높아 단일 요소나 두 요소 조합보다 참·오경보를 잘 구분하였고, precision@k는 모든 기준에서 1.0이었다. 예측 유형 기반 위험도와 정답 유형 기반 위험도의 Spearman 상관은 0.982(충격도 일치율 98.9%)로 오분류의 영향은 작았다. GPT 요약은 건당 평균 1.73초가 걸렸고, 21건 모두 입력 근거의 $T$, $I$, $A$ 값과 flow 수를 그대로 인용하였다.",
+ "conclusion": "제안한 알림봇은 CICIDS2017 평가에서 이상 flow 292,007건을 경보 682건으로 묶고 즉시 알림 21건을 모두 참 경보로 선별하였다. 다만 즉시 알림이 모두 웹서버 대상 DDoS였고, 감염 PC가 외부로 연결하는 Infiltration 경보는 목적지 기준 자산가치가 1로 매겨져 관심 등급에 머물러 출발지 자산의 반영이 필요하다. 또한 척도와 등급 경계는 전문가 판단에 기반하며, flow 단위 교차 예측은 탐지 성능을 실제보다 높게 추정할 수 있다. 향후 요일 단위 분리 평가와 실제 관제 로그 적용을 진행할 계획이다."
+}

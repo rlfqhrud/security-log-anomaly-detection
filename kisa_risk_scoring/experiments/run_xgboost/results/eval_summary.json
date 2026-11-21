@@ -1,0 +1,18 @@
+{
+  "mode": "multiclass",
+  "anomalous_flows": 292007,
+  "alerts": 682,
+  "flows_per_alert": 428.1627565982405,
+  "immediate_grades": [
+    "심각",
+    "경계"
+  ],
+  "immediate_alerts": 21,
+  "immediate_share": 0.030791788856304986,
+  "overall_alert_precision": 0.6451612903225806,
+  "immediate_precision": 1.0,
+  "tp_ratio_threshold": 0.5,
+  "tp_alerts_with_true_impact": 440,
+  "spearman_risk_vs_true_risk": 0.9818423527371709,
+  "impact_agreement": 0.9886363636363636
+}

@@ -33,6 +33,9 @@ EXCLUDE = {
     "timestamp", "label", "pred", "raw_ref",
 }
 LABEL_KEYS = ("label",)
+# --slim일 때 출력 CSV에 남기는 컬럼(위험도 산정 입력)
+SLIM_KEEP = {"flow id", "source ip", "source port", "destination ip", "destination port", "protocol",
+             "timestamp", "label"}
 
 
 def _key(col) -> str:
@@ -66,19 +69,114 @@ def to_matrix(df: pd.DataFrame, cols: list[str]) -> np.ndarray:
     return x.astype(np.float32)
 
 
-def make_model(seed: int = 42, n_estimators: int = 300, class_weight: str | None = "balanced"):
+def make_model(seed: int = 42, n_estimators: int = 300, class_weight: str | None = None,
+               learning_rate: float = 0.05):
+    """LightGBM.
+
+    CICIDS2017 다중 분류(15개 유형)에서 learning_rate=0.1, class_weight="balanced"로 학습하면
+    드문 유형(Heartbleed 11건 등)의 가중치가 수만 배로 커져 학습이 발산했다
+    (정상 20% 표본 5-fold에서 정확도 0.369, 오탐률 71%; experiments/results/metrics_lightgbm_balanced.json).
+    그래서 기본값을 가중치 없음·학습률 0.05로 바꿨다. 이전 설정은 make_lightgbm_balanced로 남긴다.
+    """
     from lightgbm import LGBMClassifier
 
     return LGBMClassifier(
         n_estimators=n_estimators,
-        learning_rate=0.1,
+        learning_rate=learning_rate,
         num_leaves=63,
         importance_type="gain",      # 분할 횟수가 아니라 정보 이득 기준 (잡음 특징이 부풀지 않게)
-        class_weight=class_weight,   # Heartbleed·Infiltration처럼 드문 유형이 묻히지 않게
+        class_weight=class_weight,
         random_state=seed,
         n_jobs=-1,
         verbose=-1,
     )
+
+
+def make_lightgbm_balanced(seed: int = 42):
+    """이전 기본 설정(발산 사례 기록용)."""
+    return make_model(seed=seed, class_weight="balanced", learning_rate=0.1)
+
+
+class _LabelEncoded:
+    """정수 레이블만 받는 모델(XGBoost)을 문자열 레이블로 쓰기 위한 감싸개."""
+
+    def __init__(self, model):
+        self.model = model
+
+    def fit(self, x, y):
+        self.classes_, yi = np.unique(y, return_inverse=True)
+        self.model.fit(x, yi)
+        return self
+
+    def predict(self, x):
+        return self.classes_[np.asarray(self.model.predict(x)).astype(int)]
+
+    @property
+    def feature_importances_(self):
+        return self.model.feature_importances_
+
+
+def make_xgboost(seed: int = 42):
+    from xgboost import XGBClassifier
+
+    return _LabelEncoded(XGBClassifier(n_estimators=300, learning_rate=0.1, max_depth=10, tree_method="hist",
+                                       importance_type="gain", random_state=seed, n_jobs=-1))
+
+
+def make_random_forest(seed: int = 42):
+    from sklearn.ensemble import RandomForestClassifier
+
+    return RandomForestClassifier(n_estimators=100, random_state=seed, n_jobs=-1)
+
+
+def make_extra_trees(seed: int = 42):
+    from sklearn.ensemble import ExtraTreesClassifier
+
+    return ExtraTreesClassifier(n_estimators=100, random_state=seed, n_jobs=-1)
+
+
+def make_decision_tree(seed: int = 42):
+    from sklearn.tree import DecisionTreeClassifier
+
+    return DecisionTreeClassifier(random_state=seed)
+
+
+# 이름 → (생성 함수, 논문·지표에 적을 설명). experiments/compare_models.py가 같은 목록을 비교한다.
+MODELS = {
+    "lightgbm": make_model,
+    "lightgbm_balanced": make_lightgbm_balanced,
+    "xgboost": make_xgboost,
+    "random_forest": make_random_forest,
+    "extra_trees": make_extra_trees,
+    "decision_tree": make_decision_tree,
+}
+MODEL_DESC = {
+    "lightgbm": "LightGBM (LGBMClassifier, 300 trees, num_leaves=63, learning_rate=0.05)",
+    "lightgbm_balanced": "LightGBM (300 trees, num_leaves=63, learning_rate=0.1, class_weight=balanced)",
+    "xgboost": "XGBoost (XGBClassifier, 300 trees, max_depth=10, hist)",
+    "random_forest": "Random Forest (100 trees)",
+    "extra_trees": "Extra Trees (100 trees)",
+    "decision_tree": "Decision Tree",
+}
+
+
+def load_inputs(inputs: list[str]) -> pd.DataFrame:
+    """CSV들을 읽어 합친다. 원본 목요일 오전 파일 끝의 빈 행(Flow ID 결측, 288,602줄)은 버린다.
+
+    빈 행을 남기면 normalize_label이 결측 레이블을 BENIGN으로 바꿔 '특징이 모두 결측인 정상 flow'가 된다.
+    """
+    frames = []
+    for path in inputs:
+        df = pd.read_csv(path, encoding="latin-1", low_memory=False)
+        key = next((c for c in df.columns if _key(c) == "flow id"), None)
+        if key is not None:
+            dropped = int(df[key].isna().sum())
+            if dropped:
+                print(f"[정리] {Path(path).name}: 빈 행 {dropped:,}줄 제외", file=sys.stderr)
+            df = df[df[key].notna()]
+        df["__file"] = Path(path).name
+        frames.append(df)
+    return pd.concat(frames, ignore_index=True)
 
 
 def out_of_fold_predict(x: np.ndarray, y: np.ndarray, folds: int = 5, seed: int = 42,
@@ -125,14 +223,9 @@ def detection_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict:
 
 
 def run(inputs: list[str], out_dir: str, folds: int = 5, seed: int = 42, binary: bool = False,
-        pred_col: str = "pred") -> dict:
+        pred_col: str = "pred", model: str = "lightgbm", slim: bool = False) -> dict:
     """CSV들을 읽어 교차 예측하고, 각 CSV를 pred 컬럼을 붙여 out_dir에 같은 이름으로 저장한다."""
-    frames = []
-    for path in inputs:
-        df = pd.read_csv(path, encoding="latin-1", low_memory=False)
-        df["__file"] = Path(path).name
-        frames.append(df)
-    raw = pd.concat(frames, ignore_index=True)
+    raw = load_inputs(inputs)
 
     label_col = find_label_column(raw)
     y = normalize_label(raw[label_col]).to_numpy(dtype=object)
@@ -142,10 +235,16 @@ def run(inputs: list[str], out_dir: str, folds: int = 5, seed: int = 42, binary:
     if pred_col in cols:
         cols.remove(pred_col)
     x = to_matrix(raw, cols)
+    if slim:
+        # 메모리 절약: 위험도 산정에 쓰는 식별 컬럼만 남기고 79개 특징 컬럼은 버린다(특징은 x에 있음).
+        keep = [c for c in raw.columns if _key(c) in SLIM_KEEP] + ["__file"]
+        raw = raw[keep].copy()
+        import gc
+        gc.collect()
 
-    print(f"[이상탐지] LightGBM, flow {len(raw):,}건, 특징 {len(cols)}개, 유형 {len(set(y))}개, {folds}-fold 교차 예측",
+    print(f"[이상탐지] {MODEL_DESC[model]}, flow {len(raw):,}건, 특징 {len(cols)}개, 유형 {len(set(y))}개, {folds}-fold 교차 예측",
           file=sys.stderr)
-    pred, imp = out_of_fold_predict(x, y, folds=folds, seed=seed)
+    pred, imp = out_of_fold_predict(x, y, folds=folds, seed=seed, model_factory=MODELS[model])
 
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -154,7 +253,7 @@ def run(inputs: list[str], out_dir: str, folds: int = 5, seed: int = 42, binary:
         part.drop(columns=["__file"]).to_csv(out / name, index=False, encoding="latin-1", errors="replace")
 
     metrics = detection_metrics(y, pred)
-    metrics["model"] = "LightGBM (LGBMClassifier, class_weight=balanced)"
+    metrics["model"] = MODEL_DESC[model]
     metrics["mode"] = "binary" if binary else "multiclass"
     metrics["folds"] = folds
     with open(out / "detect_metrics.json", "w", encoding="utf-8") as f:
@@ -177,10 +276,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--out-dir", required=True, help="pred 컬럼을 붙인 CSV와 지표를 저장할 폴더")
     p.add_argument("--folds", type=int, default=5)
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--model", choices=list(MODELS), default="lightgbm",
+                   help="이상탐지 모델 (비교 결과는 experiments/compare_models.py)")
+    p.add_argument("--slim", action="store_true", help="출력 CSV에 식별·시각·레이블 컬럼만 남긴다(메모리 절약)")
     p.add_argument("--binary", action="store_true", help="정상/이상 이진 분류 (위험도 binary 모드용)")
     args = p.parse_args(argv)
 
-    m = run(args.input, args.out_dir, folds=args.folds, seed=args.seed, binary=args.binary)
+    m = run(args.input, args.out_dir, folds=args.folds, seed=args.seed, binary=args.binary, model=args.model, slim=args.slim)
     print(f"[탐지 성능] 정확도 {m['accuracy']:.4f}  macro-F1 {m['macro_f1']:.4f}  "
           f"이진 정밀도 {m['binary_precision']:.4f}  재현율 {m['binary_recall']:.4f}  오탐률 {m['false_positive_rate']:.4%}")
     print(f"출력 폴더: {Path(args.out_dir).resolve()}")
